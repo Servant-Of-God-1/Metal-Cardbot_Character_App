@@ -15,7 +15,7 @@ https://github.com/Servant-Of-God-1/Metal_Cardbot_restful_API_code
 ```
 https://github.com/Servant-Of-God-1/Metal_Cardbot_restful_API_code
 ```
-***Don't worry; instructions for self-deployment are available in the `README.md` file within the RESTful API repository. After you have successfully deployed the restful API, please edit the base URL in the ApiConfig.kt file, the file location is at***
+***Don't worry; instructions for self-deployment are available in the `README.md` file within the RESTful API repository. After you have successfully deployed the restful API, please edit the base URL in the 'ApiConfig.kt' file, the file location is at***
 ```
 app\src\main\java\com\example\testingmyapi\api
 ```
@@ -28,3 +28,4 @@ private const val BASE_URL = "your base url"
 ***This page features the animated intro video for *Metal Cardbot* Season 3 (given that Season 3 is nearing its end, I plan to replace the intro animation if a new season is released—and if I have the time to do so). Once the video finishes playing, it will automatically proceed to the next page.***
 ## 2. Login and registration page
 *** Don't worry about the security of the data you have provided to this application; the login and registration pages serve solely as gateways to access the subsequent screens, with the data stored locally (via internal storage). Press `Register` and fill in the required information to proceed to the next page.***
+# Apologies, the documentation for this repository is currently being created 🙏

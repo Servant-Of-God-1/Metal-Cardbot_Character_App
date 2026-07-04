@@ -27,7 +27,7 @@ private const val BASE_URL = "your base url"
 ```
 # Features of the Metal Cardbot character app
 ## 1. Splash Screen (with Video Animation)
-[![Watch Video](https://static.wikia.nocookie.net/metal-cardbot/images/1/16/Slider_image_8.jpg/revision/latest/scale-to-width-down/800?cb=20260528020503" alt="Metal Cardbot (season 1))](https://raw.githubusercontent.com/Servant-Of-God-1/Metal-Cardbot_Character_App/master/app/src/main/res/raw/splash_video.mp4)
+[![Watch Video](https://static.wikia.nocookie.net/metal-cardbot/images/1/16/Slider_image_8.jpg/revision/latest/scale-to-width-down/800?cb=20260528020503)](https://raw.githubusercontent.com/Servant-Of-God-1/Metal-Cardbot_Character_App/master/app/src/main/res/raw/splash_video.mp4)
 
 ***This page features the animated intro video for *Metal Cardbot* Season 3 (given that Season 3 is nearing its end, I plan to replace the intro animation if a new season is released—and if I have the time to do so). Once the video finishes playing, it will automatically proceed to the next page.***
 ## 2. Login and registration page

@@ -1,11 +1,11 @@
-# Metal Cardbot Character
+# Metal Cardbot Character App
 
 <p align= "center">
   <img src="app/src/main/ic_launcher-playstore.png" alt="Metal Cardbot Character Logo Apps" witdh= 20%">
   <br>
   <b>Metal Cardbot Character Logo Apps</b>
 </p>
-
+***The minimum Android system required to run this application is Android 7 (Nougat). Android 11 is ideal (as I tested it on a phone running Android 11).***
 ***I am using the API from***
 ```
 https://github.com/Servant-Of-God-1/Metal_Cardbot_restful_API_code

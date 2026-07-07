@@ -58,6 +58,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
 import com.example.testingmyapi.ui.screen.ProfileScreen
 import com.example.testingmyapi.ui.screen.SplashVideoView
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.ExperimentalFoundationApi
+import coil.request.ImageRequest
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
 
 enum class BottomNavTab {
     CHARACTERS,
@@ -844,6 +854,7 @@ fun CharacterCard(
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CharacterDetailScreen(
     character: CharacterDetail,
@@ -874,6 +885,7 @@ fun CharacterDetailScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
+            // Back Button
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -910,6 +922,7 @@ fun CharacterDetailScreen(
                         Column(
                             modifier = Modifier.padding(16.dp)
                         ) {
+                            // Header: Name & Favorite Button
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -937,6 +950,8 @@ fun CharacterDetailScreen(
                             }
 
                             Spacer(modifier = Modifier.height(12.dp))
+
+                            // ====== IMAGE CAROUSEL ======
                             val imageList = listOf(
                                 Triple(character.image, "Image 1", character.caption ?: ""),
                                 Triple(character.image1, "Image 2", character.caption1 ?: ""),
@@ -944,58 +959,10 @@ fun CharacterDetailScreen(
                             ).filter { it.first != null }
 
                             if (imageList.isNotEmpty()) {
-                                LazyRow(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(240.dp)
-                                ) {
-                                    items(imageList.size) { index ->
-                                        val (imageUrl, title, caption) = imageList[index]
-                                        Column(
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            modifier = Modifier.width(280.dp)
-                                        ) {
-                                            Card(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .height(220.dp),
-                                                shape = RoundedCornerShape(8.dp),
-                                                elevation = CardDefaults.cardElevation(4.dp)
-                                            ) {
-                                                AsyncImage(
-                                                    model = imageUrl,
-                                                    contentDescription = title,
-                                                    modifier = Modifier
-                                                        .fillMaxSize()
-                                                        .padding(4.dp),
-                                                    contentScale = ContentScale.Fit
-                                                )
-                                            }
-
-                                            Spacer(modifier = Modifier.height(4.dp))
-
-                                            if (caption.isNotBlank()) {
-                                                Text(
-                                                    text = caption,
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    textAlign = TextAlign.Center,
-                                                    maxLines = 2,
-                                                    overflow = TextOverflow.Ellipsis,
-                                                    modifier = Modifier.fillMaxWidth()
-                                                )
-                                            }
-
-                                            Text(
-                                                text = "${index + 1}/${imageList.size}",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                modifier = Modifier.padding(top = 4.dp)
-                                            )
-                                        }
-                                    }
-                                }
+                                EnhancedImageCarousel(
+                                    imageList = imageList,
+                                    viewModel = viewModel
+                                )
                             } else {
                                 Box(
                                     modifier = Modifier
@@ -1010,8 +977,11 @@ fun CharacterDetailScreen(
                                     )
                                 }
                             }
+                            // ====== END IMAGE CAROUSEL ======
 
+                            // Category
                             character.category?.let {
+                                Spacer(modifier = Modifier.height(8.dp))
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
@@ -1021,10 +991,11 @@ fun CharacterDetailScreen(
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
-                                Spacer(modifier = Modifier.height(8.dp))
                             }
 
+                            // Quote
                             character.quote?.let { quote ->
+                                Spacer(modifier = Modifier.height(8.dp))
                                 Card(
                                     modifier = Modifier.fillMaxWidth(),
                                     colors = CardDefaults.cardColors(
@@ -1038,9 +1009,9 @@ fun CharacterDetailScreen(
                                         color = MaterialTheme.colorScheme.onPrimaryContainer
                                     )
                                 }
-                                Spacer(modifier = Modifier.height(12.dp))
                             }
 
+                            // Description & Abilities
                             val descriptionItems = mutableListOf<Pair<String, String>>()
 
                             character.description?.let {
@@ -1066,6 +1037,7 @@ fun CharacterDetailScreen(
                             }
 
                             if (descriptionItems.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(12.dp))
                                 descriptionItems.forEach { (desc, subTitle) ->
                                     Card(
                                         modifier = Modifier.fillMaxWidth(),
@@ -1077,7 +1049,7 @@ fun CharacterDetailScreen(
                                             modifier = Modifier.padding(12.dp)
                                         ) {
                                             Text(
-                                                text = "$subTitle",
+                                                text = subTitle,
                                                 style = MaterialTheme.typography.labelMedium,
                                                 fontWeight = FontWeight.Bold,
                                                 color = MaterialTheme.colorScheme.primary
@@ -1094,7 +1066,9 @@ fun CharacterDetailScreen(
                                 }
                             }
 
+                            // Video
                             character.urlVideo?.let { videoUrl ->
+                                Spacer(modifier = Modifier.height(12.dp))
                                 val videoId = extractVideoId(videoUrl)
 
                                 Card(
@@ -1128,13 +1102,17 @@ fun CharacterDetailScreen(
                                             Spacer(modifier = Modifier.height(8.dp))
                                         }
 
-                                        Spacer(modifier = Modifier.height(8.dp))
-
                                         Button(
                                             onClick = {
                                                 try {
                                                     openYouTube(context, videoUrl)
                                                 } catch (e: Exception) {
+                                                    // Handle error
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Cannot open video",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
                                                 }
                                             },
                                             modifier = Modifier.fillMaxWidth(),
@@ -1155,6 +1133,283 @@ fun CharacterDetailScreen(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun EnhancedImageCarousel(
+    imageList: List<Triple<String?, String?, String?>>,
+    viewModel: CharacterViewModel
+) {
+    val lazyRowState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    var isAutoScrollEnabled by remember { mutableStateOf(true) }
+
+    // State untuk fullscreen
+    var isFullscreenOpen by remember { mutableStateOf(false) }
+    var fullscreenImageUrl by remember { mutableStateOf<String?>(null) }
+
+    // Hitung current page
+    val currentPage by remember {
+        derivedStateOf {
+            if (lazyRowState.layoutInfo.visibleItemsInfo.isNotEmpty()) {
+                val visibleItems = lazyRowState.layoutInfo.visibleItemsInfo
+                val viewportCenter = lazyRowState.layoutInfo.viewportStartOffset +
+                        lazyRowState.layoutInfo.viewportSize.width / 2
+
+                val closestItem = visibleItems.minByOrNull { itemInfo ->
+                    val itemCenter = itemInfo.offset + itemInfo.size / 2
+                    kotlin.math.abs(itemCenter - viewportCenter)
+                }
+
+                closestItem?.index ?: 0
+            } else {
+                0
+            }
+        }
+    }
+
+    // Auto-scroll - BERHENTI saat fullscreen terbuka
+    LaunchedEffect(Unit) {
+        if (imageList.size > 1) {
+            while (true) {
+                // CEK: Jika fullscreen terbuka, TUNGGU tanpa scroll
+                if (isFullscreenOpen) {
+                    delay(500) // Tunggu sebentar lalu cek lagi
+                    continue // Skip scroll, lanjut ke iterasi berikutnya
+                }
+
+                // Jika auto-scroll enabled dan fullscreen TIDAK terbuka
+                if (isAutoScrollEnabled) {
+                    delay(5000)
+                    val nextPage = (currentPage + 1) % imageList.size
+                    coroutineScope.launch {
+                        lazyRowState.animateScrollToItem(nextPage)
+                    }
+                } else {
+                    delay(1000)
+                }
+            }
+        }
+    }
+
+    Column {
+        LazyRow(
+            state = lazyRowState,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(240.dp)
+        ) {
+            itemsIndexed(imageList) { index, (imageUrl, title, caption) ->
+                ImageItem(
+                    imageUrl = imageUrl,
+                    title = title,
+                    caption = caption,
+                    index = index,
+                    total = imageList.size,
+                    onImageClick = { url ->
+                        fullscreenImageUrl = url
+                        isFullscreenOpen = true // ← Set true saat fullscreen terbuka
+                    }
+                )
+            }
+        }
+
+        // Page Indicator
+        if (imageList.size > 1) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                repeat(imageList.size) { index ->
+                    Box(
+                        modifier = Modifier
+                            .size(if (index == currentPage) 10.dp else 8.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (index == currentPage)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                            )
+                            .animateContentSize()
+                            .clickable(
+                                onClick = {
+                                    isAutoScrollEnabled = false
+                                    coroutineScope.launch {
+                                        lazyRowState.animateScrollToItem(index)
+                                    }
+                                    coroutineScope.launch {
+                                        delay(10000)
+                                        isAutoScrollEnabled = true
+                                    }
+                                },
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() }
+                            )
+                    )
+                    if (index < imageList.size - 1) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+                }
+            }
+        }
+    }
+
+    // Fullscreen Dialog
+    fullscreenImageUrl?.let { url ->
+        FullscreenImageDialog(
+            imageUrl = url,
+            onDismiss = {
+                fullscreenImageUrl = null
+                isFullscreenOpen = false // ← Set false saat fullscreen ditutup
+            }
+        )
+    }
+}
+
+@Composable
+fun ImageItem(
+    imageUrl: String?,
+    title: String?,
+    caption: String?,
+    index: Int,
+    total: Int,
+    onImageClick: (String) -> Unit = {}
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val captionText = caption.orEmpty()
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.width(280.dp)
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp)
+                .clickable(
+                    onClick = {
+                        imageUrl?.let { onImageClick(it) }
+                    },
+                    indication = null,
+                    interactionSource = interactionSource
+                ),
+            shape = RoundedCornerShape(8.dp),
+            elevation = CardDefaults.cardElevation(4.dp)
+        ) {
+            if (imageUrl != null) {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = title ?: "Gambar karakter",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(4.dp),
+                    contentScale = ContentScale.Fit,
+                    placeholder = rememberAsyncImagePainter(android.R.drawable.ic_menu_gallery)
+                )
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.BrokenImage,
+                        contentDescription = "No image available",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        if (captionText.isNotBlank()) {
+            Text(
+                text = captionText,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        Text(
+            text = "${index + 1}/${total}",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 4.dp)
+        )
+    }
+}
+
+@Composable
+fun FullscreenImageDialog(
+    imageUrl: String,
+    onDismiss: () -> Unit
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+                .clickable(
+                    onClick = onDismiss,
+                    indication = null,
+                    interactionSource = interactionSource
+                )
+        ) {
+            if (imageUrl.isNotEmpty()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(imageUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Fullscreen image",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    contentScale = ContentScale.Fit
+                )
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No image available",
+                        color = Color.White
+                    )
+                }
+            }
+
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close",
+                    tint = Color.White
+                )
             }
         }
     }

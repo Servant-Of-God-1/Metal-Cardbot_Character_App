@@ -129,12 +129,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        if (!checkIfWifiConnected(this)) {
-            finish()
-            return
-        }
-
         setContent {
             CharacterAppTheme {
                 Surface(
@@ -658,11 +652,6 @@ fun CharacterListContent(
         }
         uiState.characters.isNotEmpty() -> {
             Column {
-                Text(
-                    text = viewModel.getText("found_characters", uiState.characters.size),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
                 Spacer(modifier = Modifier.height(8.dp))
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
